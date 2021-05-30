@@ -24,3 +24,7 @@ export const Form = styled.View`
   border-top-left-radius: ${RFValue(50)}px;
   border-top-right-radius: ${RFValue(50)}px;
 `;
+
+export const Content = styled.ScrollView`
+  flex: 1;
+`;

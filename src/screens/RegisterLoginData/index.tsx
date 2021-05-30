@@ -13,7 +13,8 @@ import { Button } from '../../components/Form/Button';
 import {
   Container,
   HeaderTitle,
-  Form
+  Form,
+  Content
 } from './styles';
 
 interface FormData {
@@ -36,7 +37,9 @@ export function RegisterLoginData() {
     formState: {
       errors
     }
-  } = useForm();
+  } = useForm({
+    resolver: yupResolver(schema)
+  });
 
   async function handleRegister(formData: FormData) {
     const newLoginData = {
@@ -45,6 +48,27 @@ export function RegisterLoginData() {
     }
 
     // Save data on AsyncStorage
+    try {
+      const dataKey = `@passmanager:logins`;
+
+      const data = await AsyncStorage.getItem(dataKey);
+      const currentData = data ? JSON.parse(data) : [];
+
+      const dataFormatted = [
+        ...currentData,
+        newLoginData
+      ];
+
+      await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormatted));
+
+      reset();
+
+      Alert.alert('Registro salvo com sucesso!')
+
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Não foi possível salvar!');
+    }
   }
 
   return (
@@ -57,47 +81,54 @@ export function RegisterLoginData() {
         <HeaderTitle>Salve o login de algum serviço!</HeaderTitle>
 
         <Form>
-          <Input
-            title="Título"
-            name="title"
-            error={
-              // message error here
-            }
-            control={control}
-            placeholder="Escreva o título aqui"
-            autoCapitalize="sentences"
-            autoCorrect
-          />
-          <Input
-            title="Email"
-            name="email"
-            error={
-              // message error here
-            }
-            control={control}
-            placeholder="Escreva o Email aqui"
-            autoCorrect={false}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-          <Input
-            title="Senha"
-            name="password"
-            error={
-              // message error here
-            }
-            control={control}
-            secureTextEntry
-            placeholder="Escreva a senha aqui"
-          />
+          <Content
+            showsVerticalScrollIndicator={false}
+          >
+            <Input
+              title="Título"
+              name="title"
+              error={
+                // message error here
+                errors.title && errors.title.message
+              }
+              control={control}
+              placeholder="Escreva o título aqui"
+              autoCapitalize="sentences"
+              autoCorrect
+            />
+            <Input
+              title="Email"
+              name="email"
+              error={
+                // message error here
+                errors.email && errors.email.message
+              }
+              control={control}
+              placeholder="Escreva o Email aqui"
+              autoCorrect={false}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <Input
+              title="Senha"
+              name="password"
+              error={
+                // message error here
+                errors.password && errors.password.message
+              }
+              control={control}
+              secureTextEntry
+              placeholder="Escreva a senha aqui"
+            />
 
-          <Button
-            style={{
-              marginTop: RFValue(26)
-            }}
-            title="Salvar"
-            onPress={handleSubmit(handleRegister)}
-          />
+            <Button
+              style={{
+                marginTop: RFValue(26)
+              }}
+              title="Salvar"
+              onPress={handleSubmit(handleRegister)}
+            />
+          </Content>
         </Form>
       </Container>
     </KeyboardAvoidingView>
