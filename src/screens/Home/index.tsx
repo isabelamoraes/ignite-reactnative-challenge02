@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { SearchBar } from '../../components/SearchBar';
 import { LoginDataItem } from '../../components/LoginDataItem';
+
+import { useStorageData } from '../../hooks/storage';
 
 import {
   Container,
@@ -25,17 +26,22 @@ type LoginListDataProps = LoginDataProps[];
 export function Home() {
   const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
   const [data, setData] = useState<LoginListDataProps>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { getStorageData, dataStorage} = useStorageData();
 
   async function loadData() {
     // Get asyncStorage data, use setSearchListData and setData
     try {
-      const dataKey = `@passmanager:logins`;
 
-      const response = await AsyncStorage.getItem(dataKey);
-      const passwords = response ? JSON.parse(response) : [];
+      await getStorageData();
 
-      setData(passwords);
-      setSearchListData(passwords);
+      setData(dataStorage);
+      setSearchListData(dataStorage);
+
+      if(isLoading)
+        setIsLoading(false)
+
 
     } catch (error) {
       console.log(error);
@@ -45,9 +51,10 @@ export function Home() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [isLoading]);
 
   useFocusEffect(useCallback(() => {
+    setIsLoading(true)
     loadData();
   }, []));
 
